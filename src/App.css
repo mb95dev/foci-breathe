@@ -1,0 +1,466 @@
+/* ── Reset & Vars ──────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #08080f;
+  --surface: #111118;
+  --surface-2: #18182a;
+  --surface-hover: #1e1e33;
+  --border: rgba(255, 255, 255, 0.06);
+  --text: #e2e2ea;
+  --text-dim: rgba(255, 255, 255, 0.35);
+  --text-muted: rgba(255, 255, 255, 0.55);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── App Shell ─────────────────────────────────────── */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 28px;
+}
+
+/* ── Header ────────────────────────────────────────── */
+
+.header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transition: background-color 0.4s ease;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.header-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  font-weight: 400;
+}
+
+/* ── Main Layout ───────────────────────────────────── */
+
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Sidebar ───────────────────────────────────────── */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.sidebar::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+
+.section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+/* ── Pattern Selector ──────────────────────────────── */
+
+.pattern-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pattern-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.pattern-card:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.pattern-card:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pattern-card.active {
+  background: var(--surface-2);
+}
+
+.pattern-card.foci {
+  border-left: 3px solid transparent;
+}
+
+.pattern-card.foci.active {
+  border-left-color: inherit;
+}
+
+.pattern-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.pattern-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.pattern-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.foci-badge {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+.pattern-subtitle {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.pattern-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 6px;
+}
+
+/* ── Session Controls ──────────────────────────────── */
+
+.duration-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.duration-btn {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.duration-btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.duration-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.duration-btn.active {
+  background: var(--surface-2);
+  border-color: var(--text-dim);
+  color: var(--text);
+}
+
+/* ── Timer ─────────────────────────────────────────── */
+
+.session-timer {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-elapsed {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.timer-sep {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.timer-total {
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.timer-remaining {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-left: 6px;
+}
+
+/* ── Session Stats ─────────────────────────────────── */
+
+.session-stats {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+
+/* ── Audio Toggle ──────────────────────────────────── */
+
+.audio-toggle {
+  margin-top: 12px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  align-self: flex-start;
+}
+
+.audio-toggle.on {
+  background: var(--surface-2);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text);
+}
+
+.audio-toggle:hover {
+  background: var(--surface-hover);
+}
+
+/* ── Action Buttons ────────────────────────────────── */
+
+.action-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 11px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.3px;
+}
+
+.action-btn:hover {
+  background: var(--surface-hover);
+}
+
+.action-btn.primary {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.action-btn.primary:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+/* ── Center Panel ──────────────────────────────────── */
+
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 0;
+}
+
+/* ── Phase Indicator ───────────────────────────────── */
+
+.phase-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.phase-label {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.phase-countdown {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.phase-steps {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.phase-dot {
+  height: 4px;
+  border-radius: 2px;
+  transition: background-color 0.2s ease, width 0.2s ease;
+}
+
+.phase-dot.active {
+  height: 5px;
+  border-radius: 2.5px;
+}
+
+/* ── Breathing Ball Canvas ─────────────────────────── */
+
+.breathing-ball-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.breathing-ball-canvas {
+  display: block;
+}
+
+/* ── Responsive ────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .app {
+    padding: 14px 16px;
+  }
+
+  .main {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    overflow-y: auto;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+
+  .center {
+    order: 1;
+    padding: 10px 0;
+  }
+
+  .pattern-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .pattern-card {
+    flex: 1;
+    min-width: 130px;
+  }
+
+  .session-stats {
+    flex-direction: row;
+  }
+}
