@@ -1,0 +1,25 @@
+---
+description: Spec-driven development workflow conventions (kfc) for this project
+alwaysApply: false
+---
+
+# Spec Workflow
+
+This project uses a spec-driven development workflow (requirements → design → tasks → implementation).
+
+## Locations
+
+- Spec documents: `.cursor/specs/{feature_name}/` (kebab-case feature names, e.g. `user-authentication`)
+  - `requirements.md` — EARS-format requirements
+  - `design.md` — feature design document
+  - `tasks.md` — implementation task checklist
+- Workflow system prompt: `.cursor/system-prompts/spec-workflow-starter.md`
+- Sub-agent definitions: `.cursor/agents/kfc/`
+- Workflow settings: `.cursor/settings/kfc-settings.json`
+
+## Conventions
+
+- When starting a spec workflow, read `.cursor/system-prompts/spec-workflow-starter.md` first and follow it.
+- Each phase (requirements, design, tasks) requires explicit user approval before moving to the next.
+- Spec documents are created and structurally modified via the spec sub-agents (`spec-requirements`, `spec-design`, `spec-tasks`); the main thread only does small edits, renames, and process coordination.
+- Mark tasks complete in `tasks.md` as they are implemented; execute one task at a time unless the user requests parallel or automatic execution.
