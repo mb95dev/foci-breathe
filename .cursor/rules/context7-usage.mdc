@@ -1,0 +1,37 @@
+---
+description: Use Context7 MCP for library documentation when implementing tasks involving external libraries
+alwaysApply: false
+---
+
+# Context7 Library Documentation Rule
+
+When the user asks to implement, optimize, or refactor code that relies on external libraries, **always use Context7 MCP** to pull up-to-date documentation before writing code.
+
+## When to Use
+
+- Implementing features using: Dapper, EF Core, Autofac, SignalR, Serilog, FluentValidation, MediatR, Gridify, MQTT (MQTTnet), AWS SDK
+- Frontend work with: React, MUI, TanStack Query, Axios, React Router, i18next, react-hook-form, Zod
+- Optimizing queries, data access, or performance
+- Applying best practices for any library in the stack
+- Debugging library-specific behavior
+
+## How to Use
+
+1. Call `resolve-library-id` with the library name
+2. Call `query-docs` with the resolved ID and a specific question
+3. Apply the retrieved patterns/examples to the implementation
+
+## Example
+
+```
+# User asks: "Optimize this Dapper query for bulk inserts"
+1. resolve-library-id(libraryName: "Dapper", query: "bulk insert optimization")
+2. query-docs(libraryId: "<resolved-id>", query: "How to perform efficient bulk inserts with Dapper")
+3. Apply official patterns to the implementation
+```
+
+## Do NOT Use Context7 For
+
+- Project-specific domain logic (use codebase search instead)
+- Business rules or DDD patterns (use memory-bank and existing code)
+- Simple tasks where you already know the API

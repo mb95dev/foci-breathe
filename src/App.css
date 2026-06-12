@@ -328,6 +328,94 @@ html, body, #root {
   background: var(--surface-hover);
 }
 
+/* ── Sound Settings ────────────────────────────────── */
+
+.sound-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sound-current {
+  display: flex;
+  align-items: center;
+}
+
+.sound-name {
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.sound-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sound-btn {
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sound-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.sound-file-input {
+  display: none;
+}
+
+.sound-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 11px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+
+.sound-message.error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.sound-message.notice {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fcd34d;
+}
+
+.sound-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  opacity: 0.7;
+}
+
+.sound-dismiss:hover {
+  opacity: 1;
+}
+
 /* ── Action Buttons ────────────────────────────────── */
 
 .action-row {

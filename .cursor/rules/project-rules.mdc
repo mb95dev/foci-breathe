@@ -1,0 +1,565 @@
+---
+alwaysApply: false
+---
+# Petroleo DMS - Project Rules and Conventions
+
+## Architecture Overview
+
+### Technology Stack
+- **Framework**: .NET 8 ASP.NET Core
+- **Database**: PostgreSQL
+- **Architecture**: Modular Monolith with DDD, CQRS, Event Sourcing
+- **Cloud Services**: AWS (Cognito, S3, IoT Core, MQTT)
+- **Communication**: MQTT for terminal communication, HMAC for terminal initialization
+
+### Core Principles
+- **Domain-Driven Design (DDD)**: Business logic in domain layer, aggregates as consistency boundaries
+- **CQRS**: Separate read/write models, commands for mutations, queries for reads
+- **Event Sourcing**: Domain events for state changes, outbox pattern for reliable event publishing
+- **Separation of Concerns**: Clear boundaries between Domain, Application, Infrastructure, and API layers
+
+---
+
+## Domain Layer Rules
+
+### Aggregate Design
+- **Aggregate Root**: One aggregate root per aggregate, encapsulates business logic
+- **Entity Identity**: Use `Guid` for all entity identifiers
+- **Value Objects**: Use for immutable, behavior-rich concepts (e.g., `Money`, `Liter`, `FifoOpeningBalance`)
+- **Domain Events**: Fire events on state changes, not on every method call
+  - Only fire if state actually changed (check `wasAlreadyInState` pattern)
+  - Events must implement `IAuditableEvent` if they need audit trail
+
+### Domain Policies
+- **Pure Domain Logic**: Policies contain NO infrastructure dependencies, NO database access
+- **Calculation Policies**: All business calculations in domain policies (e.g., `FifoCalculationPolicy`, `FuelingMetricsCalculationPolicy`)
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Domain/{Entity}/Policies/`
+
+### Business Rules
+- **Validation Rules**: Implement `IBusinessRule` interface
+- **Naming**: `{Action}Cannot{Constraint}BusinessRule` (e.g., `CannotCloseFifoReportBeforeNextMonthBusinessRule`)
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Domain/{Entity}/Rules/`
+- **Throw**: `BusinessRuleValidationException` with business rule instance
+
+### Domain Events Pattern
+```csharp
+// Fire event only on actual state change
+var wasAlreadyInState = _currentState == TargetState;
+_currentState = TargetState;
+if (!wasAlreadyInState)
+{
+    AddDomainEvent(new {EventName}DomainEvent(Id, eventDate));
+}
+```
+
+### Entity Patterns
+- **Private Fields**: Use private fields with public properties for encapsulation
+- **Factory Methods**: Use static `Create()` methods for aggregate creation
+- **Update Methods**: Use instance methods like `Edit()`, `Close()`, `Reopen()` for state changes
+- **Immutability**: Prefer `init-only` properties for value objects and DTOs
+
+---
+
+## Application Layer Rules
+
+### CQRS Pattern
+- **Commands**: Mutations, return void or `CommandResult`
+- **Queries**: Read operations, return DTOs or result objects
+- **Handlers**: One handler per command/query, use MediatR
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Application/{Entity}/{Action}/`
+
+### Command Handler Pattern
+```csharp
+public class Create{Entity}CommandHandler : ICommandHandler<Create{Entity}Command>
+{
+    // 1. Validate permissions (use existing services)
+    // 2. Check business rules (domain validation)
+    // 3. Create/update aggregate
+    // 4. Save via repository
+    // 5. Publish domain events (via outbox)
+}
+```
+
+### Query Handler Pattern
+```csharp
+public class Get{Entity}QueryHandler : IQueryHandler<Get{Entity}Query, {Entity}Dto>
+{
+    // 1. Validate permissions
+    // 2. Call provider/service for data
+    // 3. Map to DTO
+    // 4. Return result
+}
+```
+
+### Provider Pattern
+- **Data Access**: Providers use Dapper for SQL queries
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Application/{Entity}/{Entity}Provider.cs`
+- **Specifications**: Use for filtering and permission checks
+- **Default-to-Visible**: For user preferences, items not in selections table are visible by default
+
+### Service Pattern
+- **Business Logic**: Services contain application-level business logic
+- **Base Services**: Inherit from base classes for common functionality (e.g., `BaseFuelingReportService`)
+- **Validation**: Services validate date ranges (max 366 days), permissions, etc.
+
+### Validation Rules
+- **FluentValidation**: Use for command/query validation
+- **Business Rules**: Domain-level validation in aggregate methods
+- **Permission Checks**: Always validate user access to entities (contractor-based)
+
+---
+
+## Infrastructure Layer Rules
+
+### Database Migrations
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Database/Migrations/Common/{YYYY}/{MM}/{DD}_{HHMM}_{description}.sql`
+- **Naming**: Use descriptive names, include date/time for ordering
+- **Idempotency**: Migrations should be safe to re-run
+- **Indexes**: Create indexes for foreign keys and frequently queried columns
+
+### Entity Framework Configuration
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Infrastructure/Domain/{Entity}/{Entity}EntityTypeConfiguration.cs`
+- **Conventions**: Use `IEntityTypeConfiguration<T>` for entity mappings
+- **Value Objects**: Map value objects as owned entities
+
+### Repository Pattern
+- **Interface**: Define in Domain layer (`I{Entity}Repository`)
+- **Implementation**: Implement in Infrastructure layer
+- **Methods**: Use async methods, return `Task<T?>` for single entities
+- **Unit of Work**: EF Core `DbContext` acts as unit of work
+
+### Outbox Pattern
+- **Domain Notifications**: Register in `DomainNotificationsMap.cs`
+- **Internal Commands**: Register in `InternalCommandsMap.cs`
+- **Auditable Events**: Register in `AuditableEventsMap.cs`
+- **Processing**: Background service processes outbox for reliable event publishing
+
+### MQTT Configuration
+- **Client Setup**: Configure in `appsettings.Development.json`
+- **TLS**: Use TLS for production (`UseTls: true`)
+- **Client ID**: Must be unique per environment
+- **Certificates**: Encrypted with AES, stored securely
+
+---
+
+## API Layer Rules
+
+### Controller Pattern
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Api/Controllers/{Entity}Controller.cs`
+- **Minimal APIs**: Use for simple endpoints
+- **Controllers**: Use for complex endpoints with multiple actions
+- **Versioning**: Use ASP.NET Core API Versioning libraries
+
+### Request/Response DTOs
+- **Naming**: `{Action}{Entity}Request` / `{Action}{Entity}Response`
+- **Validation**: Use FluentValidation attributes or validators
+- **Mapping**: Map from DTOs to commands/queries in controllers
+
+### Authorization
+- **Permissions**: Check permissions in command/query handlers
+- **Roles**: Use role-based access control (RBAC)
+- **Contractor Access**: Always filter by contractor ownership
+
+### Error Handling
+- **Middleware**: Use exception handling middleware
+- **ProblemDetails**: Return `ProblemDetails` for API errors
+- **Business Rules**: Map `BusinessRuleValidationException` to appropriate HTTP status codes
+- **Structured Logging**: Use Serilog for logging
+
+---
+
+## FIFO Reports System
+
+### Core Concepts
+- **FIFO Queue**: First-In-First-Out inventory tracking per tank per month
+- **Operations**: Deliveries, Fuelings, PW (Internal Receipts), RW (Internal Withdrawals)
+- **Unified Table**: All FIFO operations stored in `fifo_operations` table (not in delivery entities)
+- **Status Flow**: Open → Closed → Reopen → Reclose → Archived
+
+### FIFO Calculation Rules
+1. **Ordering**: Operations ordered by `fifo_date` (acceptance date for deliveries, actual date for fuelings)
+2. **Opening Balance**: BO.1 (probe) is system-calculated, BO.2-BO.4 are user input
+3. **Closing Balance**: BZ.1-BZ.6 calculated from operations and probe reading
+4. **Parceling**: Fuelings consume inventory in FIFO order (oldest first)
+5. **Validation**: Cannot close with zero-price deliveries, negative balances, or pending operations
+
+### FIFO Protection Rules
+- **Closed Month Protection**: Cannot edit/delete operations in closed FIFO months
+- **Provider Method**: Use `FifoReportProvider.IsMonthClosedAsync()` to check month status
+- **Handler Pattern**: Check FIFO status before allowing edits/deletes
+- **Acceptance Date**: Deliveries use `acceptance_date` for FIFO chronology (defaults to `start_date`)
+
+### FIFO Domain Policies
+- **FifoCalculationPolicy**: Pure calculation logic (no dependencies)
+- **FifoInventoryPolicy**: Queue management and parceling
+- **FifoClosingBalancePolicy**: Closing balance calculations
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Domain/FifoReports/Policies/`
+
+---
+
+## Reports System
+
+### Report Types
+- **Standard Reports**: Fixed schema (Consumption, Costs, Efficiency, Storage Management, Comprehensive)
+- **Custom Reports**: User-configurable columns and filters
+- **Location**: `src/DMS/Modules/Core/Petroleo.DMS.Core.Application/Fuelings/Reports/`
+
+### Report Services Pattern
+- **Base Service**: `BaseFuelingReportService` for common logic
+- **Report-Specific**: `FuelingsFor{ReportType}ReportService` for business logic
+- **Comprehensive**: `FuelingsForComprehensiveReportService` for all fields (used by custom reports)
+
+### Aggregation System
+- **Single-Key Aggregators**: Support subtotals (vehicle, driver, tank, terminal, fuelingType, costGroup)
+- **Multi-Key Aggregators**: No subtotals (vehicleGroup, driverGroup, cardGroup)
+- **Metrics**: Defined in `FuelingMetricsCalculationPolicy` (domain layer)
+- **Service**: `FuelingAggregationService` handles aggregation and subtotal calculations
+
+### Export Features
+- **Subtotals**: Inserted after each group, "SUMA: {GroupName}" in first column
+- **Aggregates**: Separate summary tables appended after main data
+- **Summary Section**: Always at top (unless `IsSummaryTableVisible = false` for custom reports)
+- **Builders**: `SubtotalBuilder` and `AggregateBuilder` for export formatting
+
+### Report Validation
+- **Date Range**: Maximum 366-day range
+- **Security**: Contractor-based access control via specifications
+- **Subtotals**: Only single-key aggregators allowed
+- **Metrics**: Report-specific allowlists (consumption allows different metrics than costs)
+
+---
+
+## Alerts System
+
+### Alert Implementation Pattern
+1. **Domain Event**: Create domain event in `Domain/{Entity}/Events/`
+2. **Fire Event**: Update domain entity to fire event on state change
+3. **Alert Classes**: Create alert, payload, configuration, constants, factory in `Domain/Alerts/{AlertName}/`
+4. **Command**: Create command and handler in `Application/{Entity}/{Action}/Alerts/`
+5. **Notification**: Create notification and handler to process domain event
+6. **Registration**: Register in maps (DomainNotificationsMap, InternalCommandsMap, AuditableEventsMap, AlertMap)
+7. **Subscriptions**: Configure in `AlertCanSubscribePolicy` and `UserAlertSubscriptionService`
+8. **Migration**: Add alert type to database
+
+### Alert Payload Requirements
+- **Source Identification**: MUST include either `TerminalId` OR `TankId` property
+- **Payload Factory**: Use factory pattern for creating payloads
+- **Constants**: Store alert metadata in constants class
+
+### Alert Subscription Pattern
+- **Role-Based**: Configure in `AlertCanSubscribePolicy` with role flags
+- **Auto-Subscribe**: Add to role methods in `UserAlertSubscriptionService`
+- **Default State**: New items appear automatically (default-to-visible pattern)
+
+---
+
+## User Preferences & Filtering
+
+### User Selection Pattern
+- **Table**: `core.user_{module}_{entity}_selections` with `(user_id, entity_id)` primary key
+- **Default Behavior**: Items NOT in selections table are visible (default-to-visible)
+- **API Endpoints**: 
+  - `GET /{entities}` - Returns filtered items
+  - `GET /{entity}-filters` - Returns all items with selection state
+  - `PUT /{entity}-filters` - Updates user selections
+
+### Provider Logic
+```sql
+-- Default-to-visible: items not in selections OR explicitly selected
+WHERE entity_id = ANY(:availableIds) 
+  AND (entity_id NOT IN (SELECT entity_id FROM selections WHERE user_id = :userId)
+    OR entity_id IN (SELECT entity_id FROM selections WHERE user_id = :userId AND is_selected = true))
+```
+
+### Permission Integration
+- **Validation**: Use existing `Get{Entity}IdsForUser()` services
+- **Admin Access**: Use `ContractorType.Petroleo` pattern for full access
+- **Performance**: Use `Count == 0` instead of `.Any()` for better performance
+
+---
+
+## Tank Fuel Levels & Deliveries
+
+### Critical Separation
+- **Tank Fuel Levels**: Come from physical sensors via terminal status messages (`tank_statuses` table)
+- **Deliveries**: Business records of fuel additions (do NOT update tank fuel levels)
+- **Architecture**: Physical measurements (TankStatus) vs. business transactions (Deliveries) are intentionally separate
+
+### Data Flow
+```
+Terminal/Simulator → StatusReceivedTerminalNotificationHandler → 
+AddTerminalStatusCommand → Tank.AddStatus() → Updates last_tank_status_id
+```
+
+### Delivery Processing
+- **Manual Deliveries**: User-created business records
+- **Automatic Deliveries**: Created from terminal delivery session messages
+- **FIFO Integration**: Deliveries trigger FIFO report synchronization
+- **Last Delivery**: Updates `tanks.last_delivery_id` and `tanks.last_delivery_type`
+
+### Common Issues
+- **Issue**: "Tank fuel level not changing after adding delivery"
+- **Solution**: This is expected - send terminal status message with `tank_data` array
+- **Issue**: "Delivery volume doesn't match tank fuel level change"
+- **Investigation**: Check for volume discrepancy alerts, compare timestamps, review calibration
+
+---
+
+## Terminal Communication
+
+### Initialization
+- **Endpoint**: HMAC-secured endpoint for first-time terminal connection
+- **Process**: Verify terminal number → Check if already connected → Generate AWS certificates → Mark as connected
+- **Certificates**: AES-encrypted, returned to terminal device
+
+### Status Messages
+- **Types**: `full-info` (includes tank_data) vs. `basic-info` (no tank data)
+- **Tank Data**: Required for tank fuel level updates
+- **Fields**: `fuel_level`, `fuel_level_probe`, `pressure`, `temperature`
+
+### Delivery Sessions
+- **Start**: Terminal sends delivery start message
+- **Status Updates**: Multiple status messages during delivery
+- **Stop**: Terminal sends delivery stop message → Creates automatic delivery
+
+---
+
+## Testing Rules
+
+### Unit Tests
+- **Location**: `src/DMS/Modules/Core/Tests/Petroleo.DMS.Core.UnitTests/`
+- **Focus**: Domain logic, business rules, policies
+- **Naming**: `{Entity}{Action}Tests.cs`
+
+### Integration Tests
+- **Location**: `src/DMS/Modules/Core/Tests/Petroleo.DMS.Core.IntegrationTests/`
+- **Focus**: Command/query handlers, database operations
+- **Setup**: Requires `appsettings.Development.json` with connection string
+
+### System Tests
+- **Location**: `src/DMS/Modules/Core/Tests/Petroleo.DMS.Core.SystemTests/`
+- **Focus**: API endpoints, MQTT communication
+- **Setup**: Requires MQTT configuration in `appsettings.Development.json`
+
+### Test Data
+- **Isolation**: Each test should be independent
+- **Cleanup**: Clean up test data after tests
+- **Fixtures**: Use test fixtures for common setup
+
+---
+
+## Development Workflow
+
+### Environment Setup
+1. **Docker**: Run `docker compose -f docker/docker-compose.yml up -d`
+2. **Migrations**: Run database migrations via build script
+3. **Configuration**: Create `appsettings.Development.json` with connection strings and AWS settings
+4. **Tests**: Run all tests to verify environment setup
+
+### Code Organization
+- **Modules**: Separate modules for different bounded contexts
+- **Layers**: Clear separation: Domain → Application → Infrastructure → API
+- **Folders**: Organize by feature/entity, not by technical layer within feature folders
+
+### Naming Conventions
+- **Entities**: PascalCase (e.g., `FifoReport`, `ManualDelivery`)
+- **Commands**: `{Action}{Entity}Command` (e.g., `CreateManualDeliveryCommand`)
+- **Queries**: `Get{Entity}Query` or `Get{Entity}{Purpose}Query`
+- **Handlers**: `{Command/Query}Handler`
+- **Providers**: `{Entity}Provider`
+- **Services**: `{Purpose}Service` or `{Entity}For{Purpose}Service`
+
+### Database Conventions
+- **Tables**: `core.{entity_name}` (snake_case)
+- **Columns**: snake_case
+- **Foreign Keys**: `{referenced_entity}_id`
+- **Timestamps**: `created_at`, `updated_at`, `created_date`, `updated_date` (TIMESTAMPTZ)
+- **Soft Deletes**: Use `is_active` boolean flag (preferred) or `deleted_at` timestamp
+
+### Migration Conventions
+- **File Naming**: `{DD}_{HHMM}_{description}.sql`
+- **Ordering**: Use date/time prefix for proper ordering
+- **Idempotency**: Safe to re-run (use `IF NOT EXISTS`, etc.)
+- **Rollback**: Consider rollback scripts for production
+
+---
+
+## Security & Permissions
+
+### Authentication
+- **AWS Cognito**: Primary authentication mechanism
+- **JWT Tokens**: Use for API authentication
+- **Domain Whitelist**: Optional domain-based login restriction
+
+### Authorization
+- **RBAC**: Role-based access control (Admin, Warehouseman, Accountant, FleetManager)
+- **Contractor-Based**: Always filter by contractor ownership
+- **Entity Permissions**: Check permissions in command/query handlers
+
+### Data Access
+- **Specifications**: Use for filtering by contractor and permissions
+- **Provider Methods**: Include permission checks in data access methods
+- **Admin Override**: `ContractorType.Petroleo` has full access
+
+---
+
+## Performance & Optimization
+
+### Database
+- **Indexes**: Create indexes for foreign keys and frequently queried columns
+- **Connection Pooling**: Configure in connection string (`Pooling=true;MinPoolSize=10;MaxPoolSize=100`)
+- **Query Optimization**: Use Dapper for complex queries, EF Core for simple CRUD
+
+### Caching
+- **ASP.NET Core Caching**: Use for appropriate endpoints
+- **Redis**: Use for distributed scenarios
+- **Output Caching**: Implement for read-heavy endpoints
+
+### Async/Await
+- **I/O Operations**: Always use async/await for I/O-bound operations
+- **Cancellation Tokens**: Always pass and handle cancellation tokens
+- **Avoid**: Never use `.Result` or `.Wait()` in async contexts
+
+---
+
+## Error Handling & Logging
+
+### Exception Handling
+- **Middleware**: Use exception handling middleware
+- **Structured Logging**: Use Serilog
+- **ProblemDetails**: Return `ProblemDetails` for API errors
+- **Business Rules**: Map to appropriate HTTP status codes
+
+### Logging Levels
+- **Information**: Normal application flow
+- **Warning**: Recoverable issues
+- **Error**: Exceptions and failures
+- **Debug**: Detailed diagnostic information
+
+---
+
+## Common Patterns & Anti-Patterns
+
+### ✅ Do
+- Use domain events for state changes
+- Check state before firing events (avoid duplicate events)
+- Use value objects for type safety
+- Validate permissions in handlers
+- Use specifications for filtering
+- Follow CQRS pattern strictly
+- Keep domain policies pure (no dependencies)
+
+### ❌ Don't
+- Don't update tank fuel levels from deliveries
+- Don't add infrastructure dependencies to domain layer
+- Don't use synchronous I/O in async contexts
+- Don't bypass permission checks
+- Don't mix read and write models
+- Don't fire domain events on every method call (only on state changes)
+- Don't use `var` when type is not evident
+
+---
+
+## Key Business Rules
+
+### FIFO Reports
+- Cannot close report before next month starts
+- Cannot modify operations in closed months
+- Cannot close with zero-price deliveries
+- Cannot close with negative balances
+- Cannot close with pending operations
+- Must have probe reading to close report
+
+### Deliveries
+- Acceptance date defaults to delivery date
+- Cannot edit/delete deliveries in closed FIFO months
+- Acceptance date used for FIFO chronology
+- Deliveries don't update tank fuel levels
+
+### Terminals
+- Terminal number must be unique
+- Maximum 4 tanks per terminal
+- Terminal must be initialized before use
+- Certificates required for MQTT connection
+
+### Users & Permissions
+- Email must be unique per contractor
+- Users belong to contractors
+- Roles determine permissions
+- Admin users have elevated access
+
+---
+
+## Documentation Standards
+
+### Code Documentation
+- **XML Comments**: Use for public APIs
+- **README Files**: Include setup instructions
+- **Technical Docs**: Document architecture decisions (ADR)
+- **API Docs**: Use Swagger/OpenAPI
+
+### Documentation Location
+- **Technical**: `docs/Technical/`
+- **Terminals**: `docs/Terminals/`
+- **Templates**: `docs/Templates/`
+- **Architecture**: `docs/Documentation/` (SRS, HLD, ADR, C4)
+
+---
+
+## Feature Implementation Documentation
+
+### MANDATORY: After completing any significant feature or change, create comprehensive documentation in `docs/Technical/{Module}/`
+
+### Documentation Structure
+For each feature implementation, create a markdown file containing:
+
+1. **Overview**: Brief description of the feature/change
+2. **Data Flow Diagram**: Visual diagram showing how data flows through the system (use `GenerateImage` tool)
+3. **Database Layer**: SQL changes, views, migrations
+4. **Application Layer Changes**: All modified files with code snippets
+5. **Affected API Endpoints**: Table of all affected endpoints with methods
+6. **Sample API Requests**: Ready-to-use Swagger request examples (verify actual request structure from code)
+7. **Test Updates**: List of modified test files and what was changed
+8. **Integration Test Results**: Summary of test results
+9. **Related Files Summary**: Quick reference table of all modified files
+10. **Notes**: Additional context, translations, edge cases
+
+### Folder Structure
+```
+docs/Technical/{Module}/
+├── {FeatureName}.md           # Main documentation
+└── {feature_name}_flow_diagram.png  # Data flow diagram
+```
+
+### Module Folders (create if doesn't exist)
+- `docs/Technical/Fuelings/` - Fueling-related features
+- `docs/Technical/Deliveries/` - Delivery-related features
+- `docs/Technical/Terminals/` - Terminal-related features
+- `docs/Technical/Reports/` - Report-related features
+- `docs/Technical/Alerts/` - Alert-related features
+- `docs/Technical/Users/` - User/permission-related features
+- `docs/Technical/FIFO/` - FIFO report-related features
+
+### Example Documentation File
+See `docs/Technical/Fuelings/PausesBetweenPulsesCounter.md` for reference implementation
+
+### When to Create Documentation
+- Adding new fields to existing entities exposed via API
+- Creating new API endpoints
+- Implementing new features
+- Modifying data flow between layers
+- Adding new report types or export formats
+- Implementing new alert types
+- Any change touching multiple files across layers
+
+### Documentation Quality Checklist
+- [ ] Flow diagram generated and included
+- [ ] All modified files listed with paths
+- [ ] Code snippets showing actual changes
+- [ ] Sample API requests verified against actual request models
+- [ ] Test file updates documented
+- [ ] Related commit reference included
+
+---
+
+This document serves as the comprehensive reference for all development work on the Petroleo DMS system. Follow these patterns and conventions to maintain consistency and quality across the codebase.

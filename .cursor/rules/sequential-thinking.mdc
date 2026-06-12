@@ -1,0 +1,50 @@
+---
+description: Use Sequential Thinking MCP for complex multi-step reasoning before implementing
+alwaysApply: true
+---
+
+# Sequential Thinking Rule
+
+When facing complex problems, use the `sequentialthinking` MCP tool to reason step-by-step before writing code. This prevents missed edge cases, cascade bugs, and architectural oversights.
+
+## When to Use
+
+- **Debugging**: Bug could originate in multiple places; need to systematically narrow down
+- **Architecture decisions**: Trade-offs between approaches (e.g., new module vs extending existing)
+- **Multi-file refactoring**: Changes across 5+ files with dependency ordering
+- **Complex domain logic**: FIFO calculations, report aggregation, fueling metrics, limit recalculation
+- **Performance optimization**: Analyzing query plans, comparing strategies
+- **New feature design**: Requirements → domain model → events → handlers → tests
+- **Cross-module impact analysis**: Changes that trigger integration events across module boundaries
+
+## How to Use
+
+Call `sequentialthinking` in a loop. Each thought step can:
+- Build on previous steps
+- Revise earlier conclusions (`isRevision: true`)
+- Branch into alternative approaches (`branchFromThought`)
+- Adjust scope (`totalThoughts` can increase/decrease)
+
+```
+Step 1: Understand the problem and identify affected components
+Step 2: Trace the data flow through handlers, events, providers
+Step 3: Identify edge cases and cross-module impacts
+Step 4: Form a hypothesis for the solution
+Step 5: Verify hypothesis against domain rules and existing patterns
+Step 6: Revise if needed, then implement
+```
+
+## When NOT to Use
+
+- Simple CRUD operations or single-file changes
+- Clear one-step tasks (rename, add field, fix typo)
+- Reading/searching code
+- Tasks where the solution is immediately obvious
+
+## Trigger Phrases
+
+Agent should auto-detect complexity, but users can explicitly request:
+- "Think through this carefully"
+- "Analyze step by step before coding"
+- "What are the implications?"
+- "Debug this systematically"

@@ -1,0 +1,23 @@
+---
+alwaysApply: false
+---
+# Git History Analysis Rule
+
+When the user asks about git history, code changes, regressions, or branch comparisons, use the `git-history-analyzer` skill from `.cursor/skills/git-history-analyzer/SKILL.md`.
+
+## Trigger Phrases
+- "What changed in..." / "Co się zmieniło w..."
+- "Compare branches" / "Porównaj branche"
+- "When was this introduced" / "Kiedy to dodano"
+- "Who changed this" / "Kto to zmienił"
+- "Show me the history" / "Pokaż historię"
+- "Find the commit that broke" / "Znajdź commit który zepsuł"
+- "Review changes" / "Przejrzyj zmiany"
+- "What happened between" / "Co się stało między"
+
+## Key Commands
+- `git log --oneline -S"term"` — Find when a term was added/removed
+- `git diff main...HEAD --stat` — Changes on current branch vs main
+- `git blame <file>` — Line-by-line authorship
+- `git log --follow -p -- <file>` — Full file history with diffs
+- `az repos pr list` — Azure DevOps PR listing

@@ -1,0 +1,416 @@
+---
+alwaysApply: true
+---
+# Agent Skills - Petroleo DMS System
+
+## Core Technical Skills
+
+### Programming Languages & Frameworks
+- **C# 13/14**: Advanced language features, primary constructors, pattern matching, records
+- **.NET 8**: ASP.NET Core, async/await patterns, dependency injection
+- **TypeScript/React**: Frontend development (for full-stack context)
+- **SQL/PostgreSQL**: Complex queries, migrations, performance optimization
+- **Dapper**: Micro-ORM for data access
+- **Entity Framework Core**: ORM configuration and migrations
+
+### Architecture Patterns
+- **Domain-Driven Design (DDD)**: 
+  - Aggregate design and boundaries
+  - Value objects and entities
+  - Domain events and event sourcing
+  - Bounded contexts and modules
+- **CQRS (Command Query Responsibility Segregation)**:
+  - Command/Query separation
+  - Handler patterns
+  - Read/write model optimization
+- **Event Sourcing**:
+  - Domain event patterns
+  - Outbox pattern implementation
+  - Event replay and state reconstruction
+- **Modular Monolith**: Module organization and boundaries
+
+### Design Patterns
+- **Repository Pattern**: Data access abstraction
+- **Provider Pattern**: Dapper-based data access
+- **Service Pattern**: Application business logic
+- **Factory Pattern**: Aggregate creation
+- **Specification Pattern**: Query filtering and permissions
+- **Policy Pattern**: Domain calculation logic
+
+---
+
+## Domain Expertise
+
+### Business Domain Knowledge
+
+#### Fuel Management System
+- **Terminals**: Physical devices, initialization, MQTT communication
+- **Tanks**: Fuel storage, capacity, calibration, status tracking
+- **Deliveries**: Manual and automatic fuel additions, acceptance dates
+- **Fuelings**: Automatic and external fuel dispensing
+- **FIFO Accounting**: First-In-First-Out inventory tracking per tank per month
+- **PW/RW Operations**: Internal receipts and withdrawals
+
+#### User & Access Management
+- **Contractors**: Wholesale vs. individual clients
+- **Users**: Role-based access (Admin, Warehouseman, Accountant, FleetManager)
+- **RFID Cards**: Authentication and authorization at terminals
+- **Permissions**: Contractor-based data isolation
+
+#### Reporting & Analytics
+- **Standard Reports**: Consumption, Costs, Efficiency, Storage Management
+- **Custom Reports**: User-configurable columns and filters
+- **Aggregations**: Single-key and multi-key aggregators
+- **Metrics**: Fuel amounts, costs, distances, consumption norms
+- **Export Formats**: Excel, CSV, PDF generation
+
+#### Alerts & Notifications
+- **Alert Types**: Domain event-driven alert creation
+- **Subscriptions**: User preference-based alert delivery
+- **Payload Structure**: Terminal/Tank identification requirements
+
+---
+
+## System-Specific Skills
+
+### FIFO Reports System
+- **Calculation Logic**: FIFO queue processing, parceling algorithm
+- **Status Management**: Open → Closed → Reopen → Reclose → Archived
+- **Protection Rules**: Closed month editing restrictions
+- **Acceptance Dates**: Delivery chronology for FIFO ordering
+- **Opening/Closing Balances**: BO.1-BO.4 and BZ.1-BZ.6 calculations
+- **Domain Policies**: Pure calculation logic without dependencies
+
+### Reports System
+- **Service Architecture**: Base services, report-specific services
+- **Aggregation System**: Single-key vs. multi-key aggregators
+- **Subtotal Logic**: Group-by calculations and row insertion
+- **Export Formatting**: Summary sections, subtotals, aggregates
+- **Column Translation**: camelCase to Polish header mapping
+- **Metrics Calculation**: Domain policy-based metric computation
+
+### Alerts System
+- **Implementation Pattern**: 8-step alert creation process
+- **Domain Events**: State change detection and event firing
+- **Subscription Management**: Role-based and user preference-based
+- **Payload Requirements**: Source identification (TerminalId/TankId)
+
+### User Preferences
+- **Default-to-Visible Pattern**: Items not in selections are visible
+- **Selection Tables**: User preference storage structure
+- **Permission Integration**: Contractor-based access control
+
+### Tank & Delivery Separation
+- **Physical vs. Business**: TankStatus (sensors) vs. Deliveries (transactions)
+- **Data Flow**: Terminal → Status Handler → Tank Status
+- **FIFO Integration**: Deliveries trigger FIFO synchronization
+
+---
+
+## Development Skills
+
+### Code Organization
+- **Layer Structure**: Domain → Application → Infrastructure → API
+- **Feature Organization**: Organize by entity/feature, not technical layer
+- **Naming Conventions**: Commands, Queries, Handlers, Providers, Services
+- **File Structure**: Consistent folder organization patterns
+
+### Database Skills
+- **Migration Management**: Date/time-based naming, idempotency
+- **Schema Design**: Snake_case conventions, foreign key patterns
+- **Query Optimization**: Index creation, connection pooling
+- **Dapper Usage**: Complex SQL queries, parameter binding
+
+### Testing Skills
+- **Unit Tests**: Domain logic, business rules, policies
+- **Integration Tests**: Command/query handlers, database operations
+- **System Tests**: API endpoints, MQTT communication
+- **Test Isolation**: Independent tests, proper cleanup
+
+### Security & Permissions
+- **Authentication**: AWS Cognito integration
+- **Authorization**: RBAC implementation
+- **Data Isolation**: Contractor-based filtering
+- **Permission Validation**: Handler-level permission checks
+
+---
+
+## Problem-Solving Skills
+
+### Architecture Decisions
+- **Separation of Concerns**: Physical measurements vs. business transactions
+- **Unified Tables**: FIFO operations in single table (not in delivery entities)
+- **Default Behaviors**: Default-to-visible for user preferences
+- **Pure Domain Logic**: Policies without infrastructure dependencies
+
+### Common Issues Resolution
+- **Tank Fuel Levels**: Understanding sensor-based updates vs. delivery records
+- **FIFO Protection**: Closed month editing restrictions
+- **Report Aggregations**: Single-key vs. multi-key aggregator limitations
+- **Alert Subscriptions**: Role-based and user preference configuration
+
+### Performance Optimization
+- **Database Indexing**: Foreign keys and frequently queried columns
+- **Connection Pooling**: Configuration and sizing
+- **Async Patterns**: Proper async/await usage, cancellation tokens
+- **Caching Strategies**: ASP.NET Core caching, Redis for distributed
+
+---
+
+## Code Quality Skills
+
+### Best Practices
+- **SOLID Principles**: Applied in class and interface design
+- **DRY (Don't Repeat Yourself)**: Reusable components and patterns
+- **YAGNI (You Aren't Gonna Need It)**: Avoid over-engineering
+- **Clean Code**: Readable, maintainable, self-documenting code
+
+### Error Handling
+- **Structured Logging**: Serilog implementation
+- **Exception Middleware**: Centralized error handling
+- **ProblemDetails**: API error responses
+- **Business Rule Validation**: Domain-level validation patterns
+
+### Code Review Skills
+- **Pattern Adherence**: Verify CQRS, DDD patterns
+- **Permission Checks**: Ensure security validations
+- **Event Firing**: Only on actual state changes
+- **Dependency Direction**: Domain → Application → Infrastructure
+
+---
+
+## Communication & Documentation
+
+### Technical Documentation
+- **Code Comments**: XML documentation for public APIs
+- **Architecture Decisions**: ADR documentation
+- **API Documentation**: Swagger/OpenAPI
+- **Setup Instructions**: README files and environment configuration
+
+### Domain Knowledge Transfer
+- **Business Rules**: Clear explanation of domain logic
+- **Pattern Usage**: When and why to use specific patterns
+- **Trade-offs**: Benefits and drawbacks of architectural decisions
+- **Examples**: Real-world metaphors for complex concepts
+
+---
+
+## Workflow Skills
+
+### Development Process
+- **Environment Setup**: Docker, migrations, configuration
+- **Feature Development**: Domain → Application → Infrastructure → API
+- **Testing Strategy**: Unit → Integration → System
+- **Migration Management**: Safe, idempotent database changes
+
+### Code Generation Patterns
+- **Command/Query Creation**: Follow established patterns
+- **Handler Implementation**: Standard handler structure
+- **Provider Methods**: Dapper query patterns
+- **Domain Event Creation**: Event structure and firing
+
+### Refactoring Skills
+- **Pattern Migration**: Moving to CQRS/DDD patterns
+- **Code Extraction**: Creating reusable components
+- **Dependency Reduction**: Removing infrastructure from domain
+- **Performance Tuning**: Query optimization, caching
+
+---
+
+## Specialized Knowledge Areas
+
+### AWS Integration
+- **Cognito**: User authentication and management
+- **S3**: File storage and retrieval
+- **IoT Core**: Terminal device management
+- **MQTT**: Message broker communication
+
+### Terminal Communication
+- **Initialization**: HMAC-secured endpoint, certificate generation
+- **Status Messages**: Full-info vs. basic-info, tank data structure
+- **Delivery Sessions**: Start, status updates, stop messages
+- **Protocol Understanding**: Terminal communication protocol v2.4.1+
+
+### Report Generation
+- **Excel Export**: EPPlus or similar library usage
+- **CSV Export**: Custom formatting and encoding
+- **PDF Generation**: Report layout and styling
+- **Subtotal/Aggregate Formatting**: Complex export structures
+
+---
+
+## Critical Thinking Skills
+
+### Pattern Recognition
+- **Identify**: When to use CQRS vs. simple CRUD
+- **Evaluate**: Trade-offs between patterns
+- **Apply**: Correct pattern for specific use case
+- **Refactor**: Migrate existing code to better patterns
+
+### Domain Modeling
+- **Aggregate Boundaries**: Define consistency boundaries
+- **Value Objects**: Identify immutable, behavior-rich concepts
+- **Domain Events**: Determine meaningful state changes
+- **Business Rules**: Express domain constraints
+
+### Problem Analysis
+- **Root Cause**: Identify underlying issues (e.g., tank fuel levels)
+- **Impact Assessment**: Understand business impact
+- **Solution Design**: Architect appropriate solutions
+- **Risk Mitigation**: Consider edge cases and failures
+
+---
+
+## Learning & Adaptation
+
+### Staying Current
+- **.NET Updates**: Latest C# features and .NET improvements
+- **Best Practices**: Evolving patterns and conventions
+- **Performance**: New optimization techniques
+- **Security**: Latest security practices
+
+### Knowledge Application
+- **Context Awareness**: Apply rules based on specific context
+- **Pattern Variation**: Adapt patterns to unique requirements
+- **Domain Evolution**: Understand business domain changes
+- **Technical Debt**: Recognize and address technical debt
+
+---
+
+## Quality Assurance Skills
+
+### Code Validation
+- **Linting**: C# code style and quality checks
+- **Type Safety**: Strong typing, null safety
+- **Async Patterns**: Proper async/await usage
+- **Error Handling**: Comprehensive exception handling
+
+### Testing Validation
+- **Run Tests**: Always tests proposition of implementation
+- **Test Coverage**: Critical path coverage
+- **Test Quality**: Meaningful, maintainable tests
+- **Integration Testing**: End-to-end scenario validation
+- **Performance Testing**: Query and endpoint performance
+
+### Documentation Quality
+- **Completeness**: All public APIs documented
+- **Accuracy**: Documentation matches implementation
+- **Clarity**: Clear, understandable explanations
+- **Examples**: Practical usage examples
+
+---
+
+## Collaboration Skills
+
+### Code Review
+- **Pattern Adherence**: Verify architectural patterns
+- **Security**: Check permission validations
+- **Performance**: Identify optimization opportunities
+- **Maintainability**: Assess code readability and structure
+
+### Knowledge Sharing
+- **Pattern Explanation**: Help team understand patterns
+- **Best Practices**: Share learned practices
+- **Problem Solutions**: Document solutions to common issues
+- **Architecture Decisions**: Explain design choices
+
+---
+
+## Agent Capabilities Summary
+
+### Primary Capabilities
+1. **Create Documentation**: ALWAYS create md files in `docs/Technical/{Module}/` after completing features
+2. **Architecture Design**: DDD, CQRS, Event Sourcing implementation
+3. **Domain Modeling**: Aggregate design, value objects, business rules
+4. **Code Generation**: Commands, queries, handlers following patterns
+5. **Database Design**: Migrations, schema design, query optimization
+6. **Testing**: Unit, integration, and system test creation
+7. **Problem Solving**: Identify and resolve domain-specific issues
+
+### Secondary Capabilities
+1. **Technical Documentation**: Create comprehensive docs with flow diagrams
+2. **Refactoring**: Pattern migration, code improvement
+3. **Performance**: Optimization, caching, query tuning
+4. **Security**: Authentication, authorization, data isolation
+5. **Integration**: AWS services, MQTT, terminal communication
+
+---
+
+## MANDATORY: Feature Implementation Documentation
+
+### After completing ANY significant feature or change, you MUST:
+
+1. **Create Documentation Folder** (if doesn't exist):
+   - `docs/Technical/Fuelings/` - Fueling-related features
+   - `docs/Technical/Deliveries/` - Delivery-related features
+   - `docs/Technical/Terminals/` - Terminal-related features
+   - `docs/Technical/Reports/` - Report-related features
+   - `docs/Technical/Alerts/` - Alert-related features
+   - `docs/Technical/Users/` - User/permission-related features
+   - `docs/Technical/FIFO/` - FIFO report-related features
+
+2. **Generate Flow Diagram**: Use `GenerateImage` tool to create visual data flow diagram showing:
+   - Database layer (tables, views)
+   - Data access layer (DTOs, providers)
+   - Service layer (services, handlers)
+   - Export helpers (if applicable)
+   - API endpoints
+
+3. **Create Markdown Documentation** including:
+   - **Overview**: Brief description of the change
+   - **Data Flow Diagram**: Image reference
+   - **Database Layer**: SQL changes, views affected
+   - **Application Layer Changes**: All modified files with code snippets
+   - **Affected API Endpoints**: Table format with method, endpoint, description
+   - **Sample API Requests**: Valid JSON request bodies (VERIFY from actual code!)
+   - **Test Updates**: Modified test files and changes
+   - **Integration Test Results**: Pass/fail summary
+   - **Related Files Summary**: Quick reference table
+   - **Notes**: Additional context, translations, edge cases
+
+### Documentation File Naming
+- Main doc: `docs/Technical/{Module}/{FeatureName}.md`
+- Diagram: `docs/Technical/{Module}/{feature_name}_flow_diagram.png`
+
+### Reference Example
+See `docs/Technical/Fuelings/PausesBetweenPulsesCounter.md` as the template for all feature documentation.
+
+### When to Create Documentation
+- Adding new fields exposed via API
+- Creating new API endpoints
+- Implementing new features
+- Modifying data flow between layers
+- Adding new report types or export formats
+- Implementing new alert types
+- Any change touching 3+ files across layers
+
+### Specialized Knowledge
+1. **FIFO Accounting**: Complex inventory tracking algorithms
+2. **Report Generation**: Multi-format export with aggregations
+3. **Alert System**: Event-driven notification architecture
+4. **Terminal Communication**: Protocol understanding and implementation
+5. **User Preferences**: Default-to-visible filtering patterns
+
+### Planning Rules
+1.    "Create 3-step numbered plans before coding",
+2.    "Display current plan step clearly",
+3.    "Ask for clarification on ambiguity",
+4.   "Optimize for minimal code and overhead",
+5.    "Consider performance implications",
+6.    "Think about edge cases and error scenarios",
+7.    "Consider security implications",
+8.    "Consider maintainability and readability alongside performance"
+
+### Agent Output
+ "learning_preference": "I prefer to focus on the 20% of information that yields 80% of the results (Pareto principle). Please prioritize the most impactful concepts. Explanation Style: Use the Feynman Technique with real-world metaphors to simplify complex ideas. Connections: Always highlight the relationships between concepts, especially within the programming environment. Programming Language: I work with C# and .NET, React, Typescript. Please provide examples in this context. Code Examples: In code snippets, include comments that correlate specific parts of the code to the metaphors used.",
+   "concise_and_impactful": "Provide clear and concise explanations that focus on key concepts.",
+    "use_metaphors": "Incorporate real-world metaphors to illustrate points, making the information more relatable.",
+    "highlight_connections": "Explicitly mention how different elements are connected.",
+    "explanation_rules": "Always explain why, how and when. What are the benefits and drawbacks.",
+    "code_with_comments": "Provide C#/.NET code examples that follow the metaphors, using comments to point out the correlations check in a web browser for best practices for specific feature always follow oop",
+    "further_learning": "Suggest crucial topics for deeper exploration to enhance understanding."
+
+
+
+---
+This skills document defines the comprehensive capabilities required for effective development on the Petroleo DMS system. Agents should demonstrate proficiency in these areas to ensure high-quality, maintainable, and architecturally sound code.
