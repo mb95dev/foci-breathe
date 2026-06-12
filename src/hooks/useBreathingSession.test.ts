@@ -134,6 +134,18 @@ describe('useBreathingSession wall-clock timing', () => {
     expect(result.current.state.elapsedMs).toBe(60_000);
   });
 
+  it('never completes an infinite session', () => {
+    const { result } = renderSession(Infinity);
+    act(() => result.current.start());
+
+    nowValue += 3 * 60 * 60_000; // 3 hours
+    act(() => { vi.advanceTimersByTime(1000); });
+
+    expect(result.current.state.isRunning).toBe(true);
+    expect(result.current.state.elapsedMs).toBe(3 * 60 * 60_000);
+    expect(result.current.state.totalDurationMs).toBe(Infinity);
+  });
+
   it('excludes paused time from elapsed', () => {
     const { result } = renderSession(3);
     act(() => result.current.start());

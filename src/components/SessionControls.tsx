@@ -14,6 +14,7 @@ interface Props {
 }
 
 function formatTime(ms: number): string {
+  if (!Number.isFinite(ms)) return '∞';
   const totalSec = Math.floor(ms / 1000);
   const m = Math.floor(totalSec / 60);
   const s = totalSec % 60;
@@ -41,7 +42,7 @@ export function SessionControls({
             onClick={() => onDurationChange(m)}
             disabled={session.isRunning}
           >
-            {m}m
+            {Number.isFinite(m) ? `${m}m` : '∞'}
           </button>
         ))}
       </div>
@@ -50,7 +51,7 @@ export function SessionControls({
         <span className="timer-elapsed">{formatTime(session.elapsedMs)}</span>
         <span className="timer-sep">/</span>
         <span className="timer-total">{formatTime(session.totalDurationMs)}</span>
-        {session.isRunning && (
+        {session.isRunning && Number.isFinite(remaining) && (
           <span className="timer-remaining">({formatTime(remaining)} left)</span>
         )}
       </div>

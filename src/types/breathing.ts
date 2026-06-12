@@ -112,4 +112,4 @@ export const PATTERNS: readonly BreathingPattern[] = [
   },
 ] as const;
 
-export const DURATION_OPTIONS = [1, 2, 3, 5, 10, 15, 20] as const;
+export const DURATION_OPTIONS = [1, 2, 3, 5, 10, 15, 20, 50, Infinity] as const;

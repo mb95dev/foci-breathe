@@ -13,7 +13,7 @@ import './App.css';
 export function App() {
   const [pattern, setPattern] = useState<BreathingPattern>(PATTERNS[0]);
   const [durationMinutes, setDurationMinutes] = useState(3);
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
 
   const ticker = useTickerSound();
   const { state, start, pause, resume, reset } = useBreathingSession(
