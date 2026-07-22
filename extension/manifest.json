@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "FOCI Mindfulness Reminders",
+  "description": "Periodic mindfulness voice prompts that nudge you toward present-moment awareness.",
+  "version": "1.0.0",
+  "permissions": ["storage", "alarms", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "FOCI Mindfulness Reminders",
+    "default_popup": "popup/index.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "externally_connectable": {
+    "matches": [
+      "https://mb95dev.github.io/foci-breathe/*",
+      "http://localhost:5174/*",
+      "http://127.0.0.1:5174/*"
+    ]
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -44,18 +44,50 @@ html, body, #root {
 
 .header {
   flex-shrink: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'brand nav'
+    'brand sub';
+  gap: 8px 14px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
   margin-bottom: 20px;
 }
 
 .header-left {
+  grid-area: brand;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.module-nav {
+  grid-area: nav;
+  display: flex;
+  gap: 8px;
+  justify-self: end;
+}
+
+.module-tab {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.module-tab.active {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.header-sub {
+  grid-area: sub;
+  justify-self: end;
 }
 
 .logo-dot {
@@ -75,6 +107,10 @@ html, body, #root {
   font-size: 12px;
   color: var(--text-dim);
   font-weight: 400;
+}
+
+.reminders-main {
+  display: block;
 }
 
 /* ── Main Layout ───────────────────────────────────── */
