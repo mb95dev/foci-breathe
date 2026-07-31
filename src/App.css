@@ -111,6 +111,11 @@ html, body, #root {
 
 .reminders-main {
   display: block;
+  grid-template-columns: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 32px;
 }
 
 /* ── Main Layout ───────────────────────────────────── */

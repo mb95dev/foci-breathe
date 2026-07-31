@@ -4,6 +4,8 @@
   gap: 16px;
   width: 100%;
   max-width: 720px;
+  min-height: min-content;
+  padding-bottom: 24px;
 }
 
 .reminders-hero h2 {
