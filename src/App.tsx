@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PATTERNS } from './types/breathing';
 import type { BreathingPattern } from './types/breathing';
 import { useBreathingSession } from './hooks/useBreathingSession';
@@ -9,6 +9,7 @@ import { PatternSelector } from './components/PatternSelector';
 import { SessionControls } from './components/SessionControls';
 import { SoundSettings } from './components/SoundSettings';
 import { RemindersModule } from './modules/reminders/RemindersModule';
+import { getRemindersEngine } from './modules/reminders/webRemindersEngine';
 import './App.css';
 
 type AppModule = 'breathe' | 'reminders';
@@ -18,6 +19,12 @@ export function App() {
   const [pattern, setPattern] = useState<BreathingPattern>(PATTERNS[0]);
   const [durationMinutes, setDurationMinutes] = useState(3);
   const [audioEnabled, setAudioEnabled] = useState(true);
+
+  useEffect(() => {
+    // Keep the reminders engine alive across module switches so an active
+    // session continues while the user is on the Breathing tab.
+    getRemindersEngine();
+  }, []);
 
   const ticker = useTickerSound();
   const { state, start, pause, resume, reset } = useBreathingSession(

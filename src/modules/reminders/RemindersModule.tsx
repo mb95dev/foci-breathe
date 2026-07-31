@@ -1,39 +1,31 @@
 import { formatIntervalLabel, formatRemaining } from '../../../shared/reminders/format.ts';
-import { useExtensionBridge } from './useExtensionBridge.ts';
+import { useRemindersEngine } from './useRemindersEngine.ts';
 import { IntervalPicker } from './components/IntervalPicker.tsx';
 import { PromptLibrary } from './components/PromptLibrary.tsx';
 import { VolumeSlider } from './components/VolumeSlider.tsx';
 import './reminders.css';
 
 export function RemindersModule() {
-  const { connected, session, settings, error, run } = useExtensionBridge();
+  const { ready, session, settings, error, ttsAvailable, run } = useRemindersEngine();
+  const controlsDisabled = !ready;
 
   return (
     <div className="reminders-module">
       <section className="reminders-hero">
         <h2>Mindfulness Reminders</h2>
         <p>
-          Pair the FOCI Breathe web app with the Chrome extension to receive spoken mindfulness
-          prompts while you work anywhere in the browser.
+          Spoken mindfulness prompts on a schedule. Settings and prompts are saved in this browser —
+          no extension required. Keep this tab open (or stay on FOCI Breathe) while a session is active.
         </p>
       </section>
 
-      <section className="panel extension-status">
-        <h3>Extension connection</h3>
-        <p className={connected ? 'status ok' : 'status warn'}>
-          {connected ? 'Connected to FOCI Mindfulness Reminders extension' : 'Extension not detected on this page'}
-        </p>
-        {!connected && (
-          <ol className="install-steps">
-            <li>Run <code>npm run build:extension</code> in this repository.</li>
-            <li>Open <code>chrome://extensions</code> and enable Developer mode.</li>
-            <li>Click <strong>Load unpacked</strong> and select the <code>extension/dist</code> folder.</li>
-            <li>Reload this page after installing the extension.</li>
-          </ol>
-        )}
-      </section>
+      {!ttsAvailable && (
+        <div className="banner error">
+          Audio reminders are not supported in this browser (Web Speech API unavailable).
+        </div>
+      )}
 
-      {error && <div className="banner error">{error}</div>}
+      {error && ttsAvailable && <div className="banner error">{error}</div>}
 
       <section className="panel">
         <h3>Session</h3>
@@ -45,37 +37,62 @@ export function RemindersModule() {
 
         <div className="button-row">
           {session.status === 'stopped' && (
-            <button type="button" className="primary" disabled={!connected} onClick={() => void run({ type: 'START_SESSION' })}>
+            <button
+              type="button"
+              className="primary"
+              disabled={controlsDisabled || !ttsAvailable}
+              onClick={() => void run({ type: 'START_SESSION' })}
+            >
               Start
             </button>
           )}
           {session.status === 'active' && (
-            <button type="button" disabled={!connected} onClick={() => void run({ type: 'PAUSE_SESSION' })}>Pause</button>
+            <button
+              type="button"
+              disabled={controlsDisabled}
+              onClick={() => void run({ type: 'PAUSE_SESSION' })}
+            >
+              Pause
+            </button>
           )}
           {session.status === 'paused' && (
-            <button type="button" className="primary" disabled={!connected} onClick={() => void run({ type: 'RESUME_SESSION' })}>Resume</button>
+            <button
+              type="button"
+              className="primary"
+              disabled={controlsDisabled}
+              onClick={() => void run({ type: 'RESUME_SESSION' })}
+            >
+              Resume
+            </button>
           )}
           {session.status !== 'stopped' && (
-            <button type="button" className="danger" disabled={!connected} onClick={() => void run({ type: 'STOP_SESSION' })}>Stop</button>
+            <button
+              type="button"
+              className="danger"
+              disabled={controlsDisabled}
+              onClick={() => void run({ type: 'STOP_SESSION' })}
+            >
+              Stop
+            </button>
           )}
         </div>
       </section>
 
       <IntervalPicker
         intervalMs={settings.intervalMs}
-        disabled={!connected}
+        disabled={controlsDisabled}
         onChange={intervalMs => void run({ type: 'UPDATE_INTERVAL', intervalMs })}
       />
 
       <VolumeSlider
         volume={settings.volume}
-        disabled={!connected}
+        disabled={controlsDisabled}
         onChange={volume => void run({ type: 'UPDATE_VOLUME', volume })}
       />
 
       <PromptLibrary
         prompts={settings.prompts}
-        disabled={!connected}
+        disabled={controlsDisabled}
         onAdd={text => void run({ type: 'ADD_PROMPT', text })}
         onDelete={id => void run({ type: 'DELETE_PROMPT', id })}
         onEdit={(id, text) => void run({ type: 'EDIT_PROMPT', id, text })}
