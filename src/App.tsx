@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { PATTERNS } from './types/breathing';
 import type { BreathingPattern } from './types/breathing';
 import { useBreathingSession } from './hooks/useBreathingSession';
@@ -9,10 +9,11 @@ import { PatternSelector } from './components/PatternSelector';
 import { SessionControls } from './components/SessionControls';
 import { SoundSettings } from './components/SoundSettings';
 import { RemindersModule } from './modules/reminders/RemindersModule';
+import { TechniquesModule } from './modules/techniques/TechniquesModule';
 import { getRemindersEngine } from './modules/reminders/webRemindersEngine';
 import './App.css';
 
-type AppModule = 'breathe' | 'reminders';
+type AppModule = 'breathe' | 'reminders' | 'techniques';
 
 export function App() {
   const [activeModule, setActiveModule] = useState<AppModule>('breathe');
@@ -31,35 +32,10 @@ export function App() {
     pattern, durationMinutes, audioEnabled, ticker.customBuffer,
   );
 
-  return (
-    <div className="app">
-      <header className="header">
-        <div className="header-left">
-          <div className="logo-dot" style={{ backgroundColor: pattern.color }} />
-          <h1 className="title">FOCI Breathe</h1>
-        </div>
-        <nav className="module-nav" aria-label="Modules">
-          <button
-            type="button"
-            className={activeModule === 'breathe' ? 'module-tab active' : 'module-tab'}
-            onClick={() => setActiveModule('breathe')}
-          >
-            Breathing
-          </button>
-          <button
-            type="button"
-            className={activeModule === 'reminders' ? 'module-tab active' : 'module-tab'}
-            onClick={() => setActiveModule('reminders')}
-          >
-            Reminders
-          </button>
-        </nav>
-        <p className="header-sub">
-          {activeModule === 'breathe' ? 'Breathing trainer' : 'Mindfulness reminders'}
-        </p>
-      </header>
-
-      {activeModule === 'breathe' ? (
+  let main: ReactNode;
+  switch (activeModule) {
+    case 'breathe':
+      main = (
         <main className="main">
           <aside className="sidebar">
             <PatternSelector
@@ -86,11 +62,77 @@ export function App() {
             <BreathingBall session={state} pattern={pattern} />
           </section>
         </main>
-      ) : (
-        <main className="main reminders-main">
+      );
+      break;
+    case 'reminders':
+      main = (
+        <main className="main scroll-main">
           <RemindersModule />
         </main>
-      )}
+      );
+      break;
+    case 'techniques':
+      main = (
+        <main className="main scroll-main">
+          <TechniquesModule />
+        </main>
+      );
+      break;
+    default: {
+      const _exhaustive: never = activeModule;
+      throw new Error(`Unknown module: ${_exhaustive}`);
+    }
+  }
+
+  return (
+    <div className="app">
+      <header className="header">
+        <div className="header-left">
+          <div className="logo-dot" style={{ backgroundColor: pattern.color }} />
+          <h1 className="title">FOCI Breathe</h1>
+        </div>
+        <nav className="module-nav" aria-label="Modules">
+          <button
+            type="button"
+            className={activeModule === 'breathe' ? 'module-tab active' : 'module-tab'}
+            onClick={() => setActiveModule('breathe')}
+          >
+            Breathing
+          </button>
+          <button
+            type="button"
+            className={activeModule === 'reminders' ? 'module-tab active' : 'module-tab'}
+            onClick={() => setActiveModule('reminders')}
+          >
+            Reminders
+          </button>
+          <button
+            type="button"
+            className={activeModule === 'techniques' ? 'module-tab active' : 'module-tab'}
+            onClick={() => setActiveModule('techniques')}
+          >
+            Techniques
+          </button>
+        </nav>
+        <p className="header-sub">{headerSubtitle(activeModule)}</p>
+      </header>
+
+      {main}
     </div>
   );
+}
+
+function headerSubtitle(module: AppModule): string {
+  switch (module) {
+    case 'breathe':
+      return 'Breathing trainer';
+    case 'reminders':
+      return 'Mindfulness reminders';
+    case 'techniques':
+      return 'Thought tools & CBT';
+    default: {
+      const _exhaustive: never = module;
+      return _exhaustive;
+    }
+  }
 }

@@ -6,6 +6,7 @@ Live app: https://mb95dev.github.io/foci-breathe/
 
 - **Breathing** — guided breathing sessions with patterns, timer, and sounds
 - **Reminders** — mindfulness voice prompts in the browser (no extension required). Interval, volume, and custom prompts are saved in local storage.
+- **Techniques** — CBT cycle (thoughts, emotions, behaviors) plus thought diffusion and pattern-interrupt practices, with breadcrumb navigation between categories.
 
 ## Development
 
