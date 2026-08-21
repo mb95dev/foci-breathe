@@ -1,5 +1,5 @@
 import type { ReminderSettings } from './types.ts';
-import { createDefaultSettings } from './defaults.ts';
+import { createDefaultSettings, migrateDefaultPromptsToPolish } from './defaults.ts';
 
 export interface StorageAdapter {
   get<T>(key: string): Promise<T | undefined>;
@@ -28,11 +28,22 @@ export function createSettingsStore(storage: StorageAdapter): SettingsStore {
       try {
         const stored = await storage.get<ReminderSettings>(SETTINGS_KEY);
         if (!stored) return createDefaultSettings();
-        return {
+        const prompts = migrateDefaultPromptsToPolish(
+          stored.prompts?.length ? stored.prompts : createDefaultSettings().prompts,
+        );
+        const next: ReminderSettings = {
           ...createDefaultSettings(),
           ...stored,
-          prompts: stored.prompts?.length ? stored.prompts : createDefaultSettings().prompts,
+          prompts,
         };
+        if (JSON.stringify(prompts) !== JSON.stringify(stored.prompts ?? [])) {
+          try {
+            await storage.set(SETTINGS_KEY, next);
+          } catch {
+            // Keep migrated prompts in memory even if rewrite fails.
+          }
+        }
+        return next;
       } catch {
         return createDefaultSettings();
       }
@@ -43,6 +54,7 @@ export function createSettingsStore(storage: StorageAdapter): SettingsStore {
       const next: ReminderSettings = {
         intervalMs: partial.intervalMs ?? current.intervalMs,
         volume: partial.volume ?? current.volume,
+        notificationMode: partial.notificationMode ?? current.notificationMode,
         prompts: partial.prompts ?? current.prompts,
       };
       await storage.set(SETTINGS_KEY, next);

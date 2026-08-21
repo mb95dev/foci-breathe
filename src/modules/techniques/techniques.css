@@ -3,7 +3,6 @@
   flex-direction: column;
   gap: 18px;
   width: 100%;
-  max-width: 840px;
   min-height: min-content;
   padding-bottom: 32px;
 }
@@ -23,6 +22,11 @@
 
 .breadcrumb {
   font-size: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg);
+  padding: 2px 0 10px;
 }
 
 .breadcrumb ol {
@@ -64,7 +68,7 @@
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 12px;
 }
 
@@ -282,12 +286,27 @@
 }
 
 @media (max-width: 700px) {
+  .techniques-hero h2,
+  .technique-page h2 {
+    font-size: 20px;
+  }
+
   .cycle-layout {
     grid-template-columns: 1fr;
     justify-items: center;
+    gap: 16px;
   }
 
   .cycle-side {
     width: 100%;
+  }
+
+  .cycle-node {
+    width: min(128px, 42vw);
+    height: min(128px, 42vw);
+  }
+
+  .related-row button {
+    flex: 1 1 140px;
   }
 }

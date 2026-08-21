@@ -17,10 +17,12 @@ describe('createLocalStorageAdapter', () => {
 });
 
 describe('createVoiceEngine', () => {
-  it('applies configured volume', async () => {
+  it('applies configured volume and Polish language', async () => {
     class FakeUtterance {
       text: string;
       volume = 1;
+      lang = '';
+      voice: SpeechSynthesisVoice | null = null;
       onend: ((event: Event) => void) | null = null;
       onerror: ((event: Event) => void) | null = null;
       constructor(text: string) {
@@ -30,20 +32,26 @@ describe('createVoiceEngine', () => {
 
     const spoken: FakeUtterance[] = [];
     vi.stubGlobal('SpeechSynthesisUtterance', FakeUtterance);
+    const polishVoice = { lang: 'pl-PL', localService: true, name: 'Polish' };
     Object.defineProperty(window, 'speechSynthesis', {
       configurable: true,
       value: {
+        getVoices: () => [polishVoice],
         speak: (utterance: FakeUtterance) => {
           spoken.push(utterance);
           queueMicrotask(() => utterance.onend?.(new Event('end')));
         },
         cancel: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
       },
     });
 
     const engine = createVoiceEngine();
-    await engine.speak('What do you see?', 0.42);
+    await engine.speak('Co widzisz?', 0.42);
     expect(spoken[0]?.volume).toBeCloseTo(0.42);
+    expect(spoken[0]?.lang).toBe('pl-PL');
+    expect(spoken[0]?.voice).toEqual(polishVoice);
   });
 });
 
@@ -66,10 +74,13 @@ describe('WebRemindersEngine', () => {
     Object.defineProperty(window, 'speechSynthesis', {
       configurable: true,
       value: {
+        getVoices: () => [],
         speak: (utterance: { onend: ((event: Event) => void) | null }) => {
           queueMicrotask(() => utterance.onend?.(new Event('end')));
         },
         cancel: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
       },
     });
   });

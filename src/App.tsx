@@ -10,6 +10,7 @@ import { SessionControls } from './components/SessionControls';
 import { SoundSettings } from './components/SoundSettings';
 import { RemindersModule } from './modules/reminders/RemindersModule';
 import { TechniquesModule } from './modules/techniques/TechniquesModule';
+import { VirtualScroll } from './components/VirtualScroll';
 import { getRemindersEngine } from './modules/reminders/webRemindersEngine';
 import './App.css';
 
@@ -66,16 +67,16 @@ export function App() {
       break;
     case 'reminders':
       main = (
-        <main className="main scroll-main">
+        <VirtualScroll>
           <RemindersModule />
-        </main>
+        </VirtualScroll>
       );
       break;
     case 'techniques':
       main = (
-        <main className="main scroll-main">
+        <VirtualScroll>
           <TechniquesModule />
-        </main>
+        </VirtualScroll>
       );
       break;
     default: {

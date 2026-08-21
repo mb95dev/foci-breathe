@@ -23,6 +23,8 @@
 
 html, body, #root {
   height: 100%;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
@@ -35,9 +37,11 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
   max-width: 1100px;
   margin: 0 auto;
   padding: 20px 28px;
+  overflow: hidden;
 }
 
 /* ── Header ────────────────────────────────────────── */
@@ -110,13 +114,25 @@ html, body, #root {
   font-weight: 400;
 }
 
-.scroll-main {
+.scroll-main,
+.virtual-scroll {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
   display: block;
   grid-template-columns: none;
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
   padding-bottom: 32px;
+}
+
+.virtual-scroll-inner {
+  width: 100%;
+  max-width: 840px;
+  min-height: min-content;
 }
 
 /* ── Main Layout ───────────────────────────────────── */
@@ -562,13 +578,46 @@ html, body, #root {
 
 @media (max-width: 768px) {
   .app {
-    padding: 14px 16px;
+    padding: 12px 12px 8px;
+  }
+
+  .header {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'brand'
+      'nav'
+      'sub';
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .module-nav,
+  .header-sub {
+    justify-self: stretch;
+  }
+
+  .module-nav {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .module-tab {
+    width: 100%;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 11px;
+  }
+
+  .header-sub {
+    font-size: 11px;
   }
 
   .main {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar {
@@ -587,10 +636,24 @@ html, body, #root {
 
   .pattern-card {
     flex: 1;
-    min-width: 130px;
+    min-width: min(100%, 130px);
   }
 
   .session-stats {
     flex-direction: row;
+  }
+
+  .phase-label {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .module-nav {
+    grid-template-columns: 1fr;
+  }
+
+  .title {
+    font-size: 15px;
   }
 }
