@@ -184,7 +184,6 @@ describe('settingsStore', () => {
       reminderSettings: {
         intervalMs: 60_000,
         volume: 0.5,
-        notificationMode: 'voice',
         prompts: [
           { id: 'default-see', text: 'What do you see?' },
           { id: 'custom-1', text: 'Zatrzymaj się na chwilę' },
@@ -206,7 +205,6 @@ describe('settingsStore', () => {
         fc.record({
           intervalMs: fc.integer({ min: 60_000, max: 28_800_000 }),
           volume: fc.float({ min: 0, max: 1 }),
-          notificationMode: fc.constantFrom('voice', 'beep'),
           prompts: fc.array(promptArb, { minLength: 1, maxLength: 10 }),
         }),
         async settings => {

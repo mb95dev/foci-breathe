@@ -54,7 +54,6 @@ export function createSettingsStore(storage: StorageAdapter): SettingsStore {
       const next: ReminderSettings = {
         intervalMs: partial.intervalMs ?? current.intervalMs,
         volume: partial.volume ?? current.volume,
-        notificationMode: partial.notificationMode ?? current.notificationMode,
         prompts: partial.prompts ?? current.prompts,
       };
       await storage.set(SETTINGS_KEY, next);

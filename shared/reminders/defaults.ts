@@ -45,7 +45,6 @@ export function createDefaultSettings(): ReminderSettings {
   return {
     intervalMs: DEFAULT_INTERVAL_MS,
     volume: DEFAULT_VOLUME,
-    notificationMode: 'voice',
     prompts: [...DEFAULT_PROMPTS],
   };
 }
